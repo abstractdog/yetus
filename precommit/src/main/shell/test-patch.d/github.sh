@@ -571,23 +571,26 @@ function github_write_comment
   } > "${restfile}"
 
   if [[ -n "${GITHUB_TOKEN}" ]]; then
+    echo "authenticating with token ${GITHUB_TOKEN}"
     githubauth=(-H "Authorization: token ${GITHUB_TOKEN}")
   elif [[ -n "${GITHUB_USER}"
      && -n "${GITHUB_PASSWD}" ]]; then
     githubauth=(-u "${GITHUB_USER}:${GITHUB_PASSWD}")
+    echo "authenticating with user/pass ${githubauth[@]}"
   else
     echo "Github Plugin: no credentials provided to write a comment."
     return 0
   fi
+
+  echo "POSTING TO ${GITHUB_API_URL}/repos/${GITHUB_REPO}/issues/${GITHUB_ISSUE}/comments"
 
   "${CURL}" -X POST \
        -H "Accept: application/vnd.github.v3.full+json" \
        -H "Content-Type: application/json" \
        "${githubauth[@]}" \
        -d @"${restfile}" \
-       --silent --location \
-         "${GITHUB_API_URL}/repos/${GITHUB_REPO}/issues/${GITHUB_ISSUE}/comments" \
-        >/dev/null
+       --location \
+         "${GITHUB_API_URL}/repos/${GITHUB_REPO}/issues/${GITHUB_ISSUE}/comments"
 
   retval=$?
   rm "${restfile}"
